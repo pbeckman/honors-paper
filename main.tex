@@ -303,7 +303,7 @@ We now present performance results for the posterior distribution of each proces
 \subsection{Posterior mean error}
 We first test the performance of the methods just described by studying the integrated squared error
 $$ ISE(\hat{f}) = \int_\Omega \Big(f(\vec{x})- \hat{f}(\vec{x})\Big)^2 d\vec{x}, $$
-where $f$ is the true function and $\hat{f}$ is the posterior mean of the Gaussian process. We numerically approximate the above integral using the adaptive quadrature algorithm by Genz~\cite{genz1991adaptive}, which recursively partitions the domain and applies a quadrature rule to each subdomain until an error estimate tolerance is met, making it suitable to the nondifferentiable squared error. We test each approach using regular grid sampling designs with an increasing number of observations.
+where $f$ is the true function and $\hat{f}$ is the posterior mean of the Gaussian process. We numerically approximate the above integral using the adaptive quadrature algorithm by Genz~\cite{genz1991adaptive}, which recursively partitions the domain and applies a quadrature rule to each subdomain until an error estimate tolerance is met, making it suitable to the nondifferentiable squared error. We test each approach using regular grid sampling designs with an increasing number of observations. We perform hyperparameter estimation for all tests using maximum likelihood~\cite{rasmussen2003gaussian} on a moderate initial sampling design for each method and fix the hyperparameters as we increase the number of observations. Hyperparameter estimation for very low sample densities remains for future work, see Section~\ref{future-work}.
 
 \begin{figure}
 		\centering
@@ -367,38 +367,46 @@ We find that in $\R^2$ our additive derivative noise approach is robust to hyper
 
 Our other methods do not perform as well as the standard GP in most cases. Although our nonstationary length scale approach produces exceptionally accurate posterior means for most sample densities on our one-dimensional test function, this method is very sensitive to hyperparameter selection, and we observe large errors for many sample densities on both \texttt{rad1} and \texttt{rad2} in $\R^2$. Determining methods of consistent hyperparameter estimation remains the focus of future work, as discussed in Section~\ref{future-work}. Gradient interpolation produces the smallest errors for all sufficiently large sample densities in both $\R^2$ and $\R^3$, indicating that oscillations in \texttt{rad1} are effectively reduced by further sampling, especially in higher dimensions. We now study a second radial function which exhibits persistent oscillation in the posterior mean even for higher sample densities.
 
-Our second radial function is given by
-$$\texttt{rad2}(\vec{x}) = \abs{\sin\Big(10e^{-\norm{\vec{x}}_2^2}\Big) + 0.5} - 0.2\norm{\vec{x}}_2^2 + 10.$$
-The absolute value can be easily rewritten in our conditional code model using the single branching function $g_1(\vec{x}) = \sin\Big(10e^{-\norm{\vec{x}}_2^2}\Big) + 0.5$. A graph of \texttt{rad2} in $\R$ is given in Figure~\ref{crazy} along with ISE results in $\R$, $\R^2$, and $\R^3$. We see that in this case gradient interpolation causes oscillations in the posterior mean leading to higher errors than the standard GP for a number of sample densities. The nonstationary length scale and nonstationary smoothness methods exhibit unpredictable behavior in both $\R$ and $\R^2$. This is due both to the hyperparameter sensitivity previously discussed as well as the reliance on the branching distance log GPs, which themselves experience oscillation in the center of the input space where the estimated branching distances change rapidly. However, the mixture method and the additive derivative noise method both demonstrate improved accuracy compared to standard and gradient-interpolating GPs for many test cases. Notably, the additive derivative noise model is at least as accurate as the standard GP on all test cases, and is as accurate as the gradient-interpolating GP for low sample densities where it performs well.
-
-These results indicate that adding noise to gradient observations near kinks prevents extreme oscillation due to gradient interpolation, while maintaining increased accuracy compared to function-interpolating GPs for low sample densities. Intuitively, gradients carry significant information about the behavior of the function when few observations are taken, and although exact gradient interpolation can cause oscillation, using gradient information with noise allows us to incorporate the general behavior suggested by gradient observations while avoiding oscillation.
-
 \begin{figure}
 		\centering
 		\captionsetup{justification=centering}
-    \begin{subfigure}[t]{.4\textwidth}
+    \begin{subfigure}[t]{.33\textwidth}
       \centering
       \includegraphics[scale=0.35]{figures/crazy.png}
       \caption{\textbf{True function in $\R$}}
     \end{subfigure}%
-    \begin{subfigure}[t]{.4\textwidth}
+    \begin{subfigure}[t]{.33\textwidth}
       \centering
       \includegraphics[scale=0.35]{figures/crazy-1D.png}
-      \caption{\textbf{ISE in $\R$}}
-    \end{subfigure}
-    \begin{subfigure}[t]{.4\textwidth}
+      \caption{\textbf{ISE on regular grids in $\R$}}
+    \end{subfigure}%
+    \begin{subfigure}[t]{.33\textwidth}
       \centering
       \includegraphics[scale=0.35]{figures/crazy-2D.png}
-      \caption{\textbf{ISE in $\R^2$}}
-    \end{subfigure}%
+      \caption{\textbf{ISE on regular grids in $\R^2$}}
+    \end{subfigure}
     \begin{subfigure}[t]{.4\textwidth}
       \centering
       \includegraphics[scale=0.35]{figures/crazy-3D.png}
-      \caption{\textbf{ISE in $\R^3$}}
+      \caption{\textbf{ISE on regular grids in $\R^3$}}
+    \end{subfigure}%
+    \begin{subfigure}[t]{.4\textwidth}
+      \centering
+      \includegraphics[scale=0.35]{figures/crazy-3D-LH.png}
+      \caption{\textbf{ISE for space-filling designs in $\R^3$}}
+      \label{LH}
     \end{subfigure}
-		\caption{Integrated squared error between \texttt{rad2} and the GP posterior mean. Gaussian processes constructed from observations on regular grids.}
+		\caption{Integrated squared error between \texttt{rad2} and the GP posterior mean.}
 		\label{crazy}
 \end{figure}
+
+Our second radial function is given by
+$$\texttt{rad2}(\vec{x}) = \abs{\sin\Big(10e^{-\norm{\vec{x}}_2^2}\Big) + 0.5} - 0.2\norm{\vec{x}}_2^2 + 10.$$
+The absolute value can be easily rewritten in our conditional code model using the single branching function $g_1(\vec{x}) = \sin\Big(10e^{-\norm{\vec{x}}_2^2}\Big) + 0.5$. A graph of \texttt{rad2} in $\R$ is given in Figure~\ref{crazy} along with ISE results in $\R$, $\R^2$, and $\R^3$. For this function, gradient interpolation causes oscillations in the posterior mean leading to higher errors than the standard GP for a number of sample densities. The nonstationary length scale and nonstationary smoothness methods exhibit unpredictable behavior in both $\R$ and $\R^2$. This is due both to the hyperparameter sensitivity previously discussed as well as the reliance on the branching distance log GPs, which themselves experience oscillation in the center of the input space where the estimated branching distances change rapidly. However, the mixture method and the additive derivative noise method both demonstrate improved accuracy compared to standard and gradient-interpolating GPs for many test cases.
+
+Notably, the additive derivative noise model is at least as accurate as the standard GP on all test cases, and is as accurate as the gradient-interpolating GP for low sample densities where it performs well. In Figure~\ref{LH}, rather than using a regular grid design with $n^p$ observations for some integer $n$, we study the low sample density domain in more detail by using optimized Latin hypercube designs~\cite{bates2004formulation}. These space-filling sampling methods are commonly used as initial designs for sequential optimization routines. For \texttt{rad2} in $\R^3$ the additive noise model gives superior accuracy for all test cases, and the gradient-interpolating GP provides significantly improved accuracy for many low sample density test cases when compared to the standard GP.
+
+These results indicate that adding noise to gradient observations near kinks prevents extreme oscillation due to gradient interpolation, while maintaining increased accuracy compared to function-interpolating GPs for low sample densities. Intuitively, gradients carry significant information about the behavior of the function when few observations are taken, and although exact gradient interpolation can cause oscillation, using gradient information with noise allows us to incorporate the general behavior suggested by gradient observations in improve our approximation while avoiding oscillation.
 
 \subsection{Variance error comparison}
 Beyond the accuracy of the posterior mean, we also study how well the posterior variance matches the true error. Many sequential design methods using Gaussian processes rely on the posterior variance as a measure of uncertainty, allowing targeted sampling of unexplored regions, see~\cite{jones1998efficient, ranjan2008sequential}. If the posterior variance does not match the true error, sequential designs may sample regions where the posterior mean is already a good estimator, which is significant loss when computational complexity limits the number of possible samples. Table~\ref{variance} compares the variance and true squared error of \texttt{rad1} using standard and gradient-interpolating GPS as well as our nonstationary approaches. Considering the expressions \eqref{eq:posterior-var} and \eqref{eq:posterior-var-der} for posterior variance with and without gradient observations, we see that without the introduction of nonstationary effects, the posterior variances depend only on the locations of the inputs. Thus for the standard and gradient-interpolating GPs, the regions of high variance are regularly spaced away from the inputs, while the largest errors occur in the annulus between circular kinks. While this high error region coincides with some regions of high posterior variance, there are a number of other high variance regions where the true error is in fact low and which may be explored first.
@@ -453,7 +461,7 @@ The additive derivative noise model demonstrates increased posterior variance ne
       \parbox[c]{.18\textwidth}{\includegraphics[scale=0.2]{figures/heatmaps/variance-noisy-25.png}} \\
     \hline
   \end{tabularx}
-  \caption{Comparison of true error and variance for the radial test function in $\R^2$ using two regular grid designs. Error is show in red on the left of each panel, with the variance in blue on the right.}
+  \caption{Comparison of true error and variance for \texttt{rad1} in $\R^2$ using two regular grid designs. Error is show in red on the left of each panel, with the variance in blue on the right.}
   \label{variance}
 \end{table}
 
@@ -516,11 +524,11 @@ In order to determine the effectiveness of our additive derivative noise model i
 
 Another concern in approximating branching distance in more complex codes is whether or not a given branching function $g_j$ is \textit{active} for an input $\vec{x}$, that is whether $\vec{x}$ lies in a subdomain bounded by the zero level-set of $g_j$. For example, for $\vec{x}$ in the outer ring $\norm{\vec{x}}_2^2 > 2$ of \texttt{rad1}, the value of the inner branching function $\norm{\vec{x}}_2^2 - 1$ should be irrelevant to $\hat{b}_k(\vec{x})$ as it will never cause a kink. Distinguishing between active and inactive branching functions should be studied further when implemented in an AD tool.
 
-A final area for further work is determining how construct the nonstationary noise matrix $\Sigma(X)$ to minimize error, either by optimizing the hyperparameters in its current exponential form, or deriving an improved functional form. Common methods for parameter estimation of GPs include maximum likelihood estimation and cross validation~\cite{rasmussen2003gaussian}. Comparing the effectiveness of these and other methods would facilitate the use of our nonstationary methods when reasonable hyperparameters are not known a priori.
+A final area for further work is determining how construct the nonstationary noise matrix $\Sigma(X)$ to minimize error, either by optimizing the hyperparameters in its current exponential form, or deriving an improved functional form. Common methods for parameter estimation of GPs include maximum likelihood estimation and cross validation~\cite{rasmussen2003gaussian}. However, for very low sample densities, hyperparameter estimation becomes difficult with such methods as the scattered data do not provide adequate information about the local behavior of the function. For example, maximum likelihood estimation leads to very high noise in our additive derivative noise model for low sample densities, because when data are too far apart for gradient interpolation to decrease the likelihood. However, in the absence of sufficient data, low noise gives superior performance as it allows the process to incorporate gradient observations. Determining estimation or regularization techniques to improve hyperparameter selection for very low sample densities will allow us to test our methods when reasonable hyperparameters are not known a priori.
 
 A more general framework for error analysis of Gaussian processes is the \textit{generalization error}~\cite{rasmussen2003gaussian, sollich1999learning}, which gives the expected loss when the set of inputs $X^{(n)}$ are drawn from a distribution over the input space $\Omega$ and the true function $f$ is drawn from a prior over a functional space $\mathcal{F}$. Using loss function $\mathcal{L}(\cdot, \cdot)$, the generalization error using $n$ data points is given by
 $$ E(n) = \int \int \int \mathcal{L}\Big(f(\vec{x}), \hat{f}(\vec{x})\Big) p(\vec{x}) p(f) p\big(X^{(n)}\big) \, d\vec{x} \, df \,  dX^{(n)},$$
-where $\hat{f}$ is the posterior mean of a GP. This form gives a conceptually straightforward method for studying average-case convergence under model misspecification as we have between piecewise analytic functions and twice differentiable GPs, since we can chose the space $\mathcal{F}$ from which the true function is selected to have a smoothness level different from that of the estimator $\hat{f}$. Studying the ISE is a first step towards addressing this error, as the ISE results from taking $E(n)$ when $f$ and $X^{(n)}$ are fixed, $p(\vec{x})$ is uniform, and the $\ell_2$ loss is used. We believe that further work studying the ISE and the generalization error may lead to improved functional forms for nonstationary effects.
+where $\hat{f}$ is the posterior mean of a GP. This form gives a conceptually straightforward method for studying average-case convergence under model misspecification as we have between piecewise analytic functions and twice differentiable GPs, since we can chose the space $\mathcal{F}$ from which the true function is selected to have a smoothness level different from that of the estimator $\hat{f}$. Studying the ISE is a first step towards addressing this error, as the ISE results from taking $E(n)$ when $f$ and $X^{(n)}$ are fixed, $p(\vec{x})$ is uniform, and the $\ell_2$ loss is used. We believe that deriving functional forms for nonstationary effects which minimize the ISE or the generalization error for a subclass of piecewise analytic problems, for example two-part piecewise linear, may provide alternatives to conventional hyperparameter estimation.
 
 \newpage
 
